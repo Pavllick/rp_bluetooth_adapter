@@ -1,10 +1,11 @@
 FROM debian:11
 
+SHELL ["/bin/bash", "-c"]
+
 # env vars
 ENV USER=dev
 ENV USER_ID=1000
 ENV PASSWORD=pass
-ENV WORKSPACE=/home/$USER/src
 
 RUN apt-get clean && apt-get update
 
@@ -14,7 +15,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	chrpath socat cpio python3 python3-pip python3-pexpect \
 	xz-utils debianutils iputils-ping python3-git python3-jinja2 \
 	libegl1-mesa libsdl1.2-dev pylint3 xterm \
-	python3-subunit mesa-common-dev locales sudo
+	python3-subunit mesa-common-dev locales sudo file
 
 
 # add a user
@@ -26,4 +27,16 @@ RUN echo 'en_US.UTF-8 UTF-8' >> /etc/locale.gen && locale-gen
 
 USER $USER
 
-WORKDIR $WORKSPACE
+WORKDIR /home/$USER
+
+# pull yocto poky and layers
+RUN git clone -b hardknott https://git.yoctoproject.org/git/poky.git
+
+RUN git clone -b hardknott https://git.openembedded.org/meta-openembedded
+RUN git clone -b hardknott https://git.yoctoproject.org/git/meta-raspberrypi
+
+WORKDIR /home/$USER/poky
+
+RUN . ./oe-init-build-env && \
+  bitbake-layers add-layer /home/$USER/meta-openembedded/meta-oe && \
+  bitbake-layers add-layer /home/$USER/meta-raspberrypi
