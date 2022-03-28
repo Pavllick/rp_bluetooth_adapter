@@ -1,4 +1,4 @@
-FROM debian:11
+FROM debian:10.11
 
 SHELL ["/bin/bash", "-c"]
 
@@ -17,6 +17,8 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
 	libegl1-mesa libsdl1.2-dev pylint3 xterm \
 	python3-subunit mesa-common-dev locales sudo file
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y emacs
+
 
 # add a user
 RUN useradd -u $USER_ID -U -m $USER && \
@@ -34,9 +36,3 @@ RUN git clone -b hardknott https://git.yoctoproject.org/git/poky.git
 
 RUN git clone -b hardknott https://git.openembedded.org/meta-openembedded
 RUN git clone -b hardknott https://git.yoctoproject.org/git/meta-raspberrypi
-
-WORKDIR /home/$USER/poky
-
-RUN . ./oe-init-build-env && \
-  bitbake-layers add-layer /home/$USER/meta-openembedded/meta-oe && \
-  bitbake-layers add-layer /home/$USER/meta-raspberrypi
