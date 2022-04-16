@@ -40,7 +40,9 @@ To apply latest updates and build the project run:
 
 ### Flash SD Card
 
-Under Linux check connected drives using command:
+#### On Linux
+
+Check connected drives using command:
 ```
 lsblk
 ```
@@ -58,5 +60,35 @@ sudo bmaptool copy core-image-base-raspberrypi0-wifi.wic.bz2 /dev/sdb
 ```
 
 Where **core-image-base-raspberrypi0-wifi.wic.bz2** is image name and **/dev/sdb** is SD Card path.
+
+The flashing utility will partition SD Card and write system files on it.
+
+#### On Mac
+
+Use **balenaEtcher** for simple GUI or terminal:
+
+Check connected drives using command:
+```
+diskutil list
+```
+
+Lets suppose that our SD Card name is discovered as **disk2** if it has partitions mounted they will be names disk2s1, disk2s2 and so on, they might need to be unmounted prior flashing.
+
+To unmount partition disk2 use command:
+```
+sudo diskutil unmountDisk /dev/disk2
+```
+
+To flash image to SD Card cd to **build/tmp/deploy/images/raspberrypi0-wifi/** and execute command:
+```
+bzip2 -dkc "$(readlink ./core-image-base-raspberrypi0-wifi.wic.bz2)" | sudo dd bs=1m of=/dev/disk2
+```
+
+For progress bar install pv with **brew install pv** and use following command:
+```
+bzip2 -dkc "$(readlink ./core-image-base-raspberrypi0-wifi.wic.bz2)" | sudo dd bs=1m | pv | sudo dd bs=1m of=/dev/disk2
+```
+
+Where **core-image-base-raspberrypi0-wifi.wic.bz2** is image name and **/dev/disk2** is SD Card path.
 
 The flashing utility will partition SD Card and write system files on it.
