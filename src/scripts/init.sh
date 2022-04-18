@@ -10,5 +10,6 @@ bitbake-layers add-layer /home/$USER/meta-openembedded/meta-networking
 bitbake-layers add-layer /home/$USER/meta-raspberrypi
 
 bitbake-layers add-layer /home/$USER/src/meta-bta
+bitbake-layers add-layer /home/$USER/src/meta-bt-connect
 
 bitbake -k core-image-base

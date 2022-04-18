@@ -1,0 +1,9 @@
+[Unit]
+Description=Bluetooth Reset Connection by Button Click
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/bt-connect
+
+[Install]
+WantedBy=multi-user.target

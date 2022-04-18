@@ -1,12 +1,22 @@
 # Raspberry Pi Zero W Bluetooth Speaker Adapter
 
-Project uses Docker to build Raspberry Pi file system
+Project is using Docker to download all the dependencies into Debian dock, as well volume for build directory is created.
+
+## Usage Guide
+
+To establish Bluetooth connection physical button could be installed between pins **7** and **9**. Once the button is clicked **bta** device become discoverable and could be connected.
+
+By default HDMI is used as sound output.
 
 ## Development Guide
 
-To ssh through usb use following command:
+To ssh through usb use following command, password **pass**:
 ```
 ssh root@bta.local
+```
+or
+```
+ssh pri@bta.local
 ```
 
 To build container run:
@@ -22,11 +32,6 @@ where **yocto** is Docker image name
 
 
 ### Inside Container
-
-Menuconfig
-```
-bitbake linux-raspberrypi -c menuconfig
-```
 
 For initial configuration run:
 ```
