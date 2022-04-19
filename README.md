@@ -10,7 +10,7 @@ By default HDMI is used as sound output.
 
 ## Development Guide
 
-To ssh through usb use following command, password **pass**:
+To ssh through usb use following command, password **pass**, (disabled in local.conf by default):
 ```
 ssh root@bta.local
 ```
