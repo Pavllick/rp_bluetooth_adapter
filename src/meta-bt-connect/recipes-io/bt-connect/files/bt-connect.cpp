@@ -1,16 +1,14 @@
 #include <iostream>
+#include <string>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include "fileutil.h"
-#include "gpio.h"
+#include "lib/fileutil.h"
+#include "lib/gpio.h"
 
-const int BUTTON_PIN = 4;
-const char* SCRIPT_PATH = "/usr/bin/btn_click.sh";
-
-bool RunScript() {
-	if (!IsFile(SCRIPT_PATH)) {
+bool RunScript(char* script_path) {
+	if (!FileUtil::IsFile(script_path)) {
 		std::cout << "RunScript. No script file";
 		
 		return false;
@@ -20,7 +18,7 @@ bool RunScript() {
 	int status;
 	
 	if((pid = fork()) == 0) {
-			int res = execl("/bin/sh", "sh", SCRIPT_PATH, (char*)NULL);
+			int res = execl("/bin/sh", "sh", script_path, (char*)NULL);
 			if(res == -1) {
 				exit(255);
 			}
@@ -37,25 +35,47 @@ bool RunScript() {
 	return true;
 }
 
-int main() {
-	bool result = Init(BUTTON_PIN);
-	if(!result) return -1;
-	
-	result = SetDirection(BUTTON_PIN, Direction::In);
-	if(!result) return -1;
+void ExitFail(GPIO* gpio) {
+	gpio->Dispose();
+
+	std::cerr << "ExitFail. Something went wrong." << std::endl;
+
+	exit(1);
+}
+
+int main(int argc, char** argv) {
+	if(argc < 3) {
+		std::cerr << "Usage: " << argv[0] << " BCM_PIN_NUMBER SCRIPT_PATH " << std::endl;
 		
-	result = SetEdge(BUTTON_PIN, Edge::Falling);
-	if(!result) return -1;
+		return 1;
+	}
+	
+	int bcm_pin_number = atoi(argv[1]);
+	char* script_path = argv[2];
+	
+	auto gpio = new GPIO(bcm_pin_number);
+	
+	if(!gpio->Init()) {
+		ExitFail(gpio);
+	}
+	
+	if(!gpio->SetDirection(GPIO::Direction::In)) {
+		ExitFail(gpio);
+	}
+		
+	if(!gpio->SetEdge(GPIO::Edge::Falling)) {
+		ExitFail(gpio);
+	}
 
 	while(true) {
-		auto status =  GetStatus(BUTTON_PIN);
-		if(status == Status::Error) {
-			return -1;
+		auto status =  gpio->GetStatus();
+		if(status == GPIO::Status::Error) {
+			ExitFail(gpio);
 		}
 
-		if(status == Status::Low) {
-			if(!RunScript()) {
-			 	return -1;
+		if(status == GPIO::Status::Low) {
+			if(!RunScript(script_path)) {
+				ExitFail(gpio);
 			}
 		}
 

@@ -5,10 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/MIT;md5=0835ad
 SRC_URI = "\
   file://CMakeLists.txt \
   file://bt-connect.cpp \
-  file://fileutil.h \
-  file://fileutil.cpp \
-  file://gpio.h \
-  file://gpio.cpp"
+  file://lib/"
 
 inherit cmake
 

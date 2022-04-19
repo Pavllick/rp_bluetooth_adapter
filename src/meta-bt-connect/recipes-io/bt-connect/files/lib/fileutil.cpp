@@ -8,7 +8,7 @@
 
 #include "fileutil.h"
 
-bool IsFile(std::string path) {
+bool FileUtil::IsFile(std::string path) {
 	struct stat buf;
 
 	int err = stat(path.c_str(), &buf);
@@ -19,7 +19,7 @@ bool IsFile(std::string path) {
 	return S_ISREG(buf.st_mode) == 1;
 }
 
-bool IsDir(std::string path) {
+bool FileUtil::IsDir(std::string path) {
 	struct stat buf;
 
 	int err = stat(path.c_str(), &buf);

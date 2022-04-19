@@ -10,36 +10,42 @@
 #include "fileutil.h"
 
 inline const char* GPIO_EXPORT = "/sys/class/gpio/export";
+inline const char* GPIO_UNEXPORT = "/sys/class/gpio/unexport";
 inline const std::string GPIO_BASE(int pin) { return "/sys/class/gpio/gpio" + std::to_string(pin); }
 inline const std::string GPIO_DIRECTION(int pin) { return GPIO_BASE(pin) + "/direction"; }
 inline const std::string GPIO_EDGE(int pin) { return GPIO_BASE(pin) + "/edge"; }
 inline const std::string GPIO_VALUE(int pin) { return GPIO_BASE(pin) + "/value"; }
 
+int BCMPin;
 
-char* DirectionToString(enum Direction direction) {
+char* DirectionToString(enum GPIO::Direction direction) {
 	switch(direction) {
-	  case Direction::In:
+	  case GPIO::Direction::In:
 		  return strdup("in");
 	  default:
 		  return strdup("out");
 	}
 }
 
-char* EdgeToString(enum Edge edge) {
+char* EdgeToString(enum GPIO::Edge edge) {
 	switch(edge) {
-	  case Edge::Rising:
+	  case GPIO::Edge::Rising:
 		  return strdup("rising");
-	  case Edge::Falling:
+	  case GPIO::Edge::Falling:
 		  return strdup("falling");
-		case Edge::Both:
+		case GPIO::Edge::Both:
 		  return strdup("both");
 	  default:
 		  return strdup("none");
 	}
 } 
 
-bool Init(int pin) {
-	if(IsDir(GPIO_BASE(pin))) {		
+GPIO::GPIO(int bcm_pin) {
+	BCMPin = bcm_pin;
+}
+
+bool GPIO::Init() {
+	if(FileUtil::IsDir(GPIO_BASE(BCMPin))) {		
 		return true;
 	}
 		
@@ -50,7 +56,7 @@ bool Init(int pin) {
 		return false;
 	}
 		
-	fprintf(fp, "%d\n", pin);
+	fprintf(fp, "%d\n", BCMPin);
 	fclose(fp);
 
 	// gpio directories are initially owned by 'root'.  If you have
@@ -61,20 +67,43 @@ bool Init(int pin) {
 	return true;
 }
 
-bool SetDirection(int pin, enum Direction direction) {
-	if(!IsDir(GPIO_BASE(pin))) {
+bool GPIO::Dispose() {
+	if(!FileUtil::IsDir(GPIO_BASE(BCMPin))) {		
+		return true;
+	}
+		
+	FILE *fp = fopen(GPIO_UNEXPORT, "w");
+	if(fp == NULL) {
+		std::cout << "Dispose. Cannot open unexport file";
+
+		return false;
+	}
+		
+	fprintf(fp, "%d\n", BCMPin);
+	fclose(fp);
+
+	// gpio directories are initially owned by 'root'.  If you have
+	// udev rules that change this, it may take a moment for those 
+	// changes to happen.
+	sleep(1);
+
+	return true;
+}
+
+bool GPIO::SetDirection(enum Direction direction) {
+	if(!FileUtil::IsDir(GPIO_BASE(BCMPin))) {
 		std::cout << "SetDirection. No base dir";
 		
 		return false;
 	}
 
-	if(!IsFile(GPIO_DIRECTION(pin))) {
+	if(!FileUtil::IsFile(GPIO_DIRECTION(BCMPin))) {
 		std::cout << "SetDirection. No direction file";
 				
 		return false;
 	}
 
-	FILE *fp = fopen(GPIO_DIRECTION(pin).c_str(), "w");
+	FILE *fp = fopen(GPIO_DIRECTION(BCMPin).c_str(), "w");
 	if(fp == NULL) {
 		std::cout << "SetDirection. Cannot open direction file";
 		
@@ -87,20 +116,20 @@ bool SetDirection(int pin, enum Direction direction) {
 	return true;
 }
 
-bool SetEdge(int pin, enum Edge edge) {
-	if(!IsDir(GPIO_BASE(pin))) {
+bool GPIO::SetEdge(enum Edge edge) {
+	if(!FileUtil::IsDir(GPIO_BASE(BCMPin))) {
 		std::cout << "SetEdge. No base dir";
 		
 		return false;
 	}
 
-	if(!IsFile(GPIO_EDGE(pin))) {
+	if(!FileUtil::IsFile(GPIO_EDGE(BCMPin))) {
 		std::cout << "SetEdge. No edge file";
 		
 		return false;
 	}
 		
-	FILE *fp = fopen(GPIO_EDGE(pin).c_str(), "w");
+	FILE *fp = fopen(GPIO_EDGE(BCMPin).c_str(), "w");
 	if(fp == NULL) {
 		std::cout << "SetEdge. Cannot open edge file";
 		
@@ -113,20 +142,20 @@ bool SetEdge(int pin, enum Edge edge) {
 	return true;
 }
 
-enum Status GetStatus(int pin) {
-	if(!IsDir(GPIO_BASE(pin))) {
+enum GPIO::Status GPIO::GetStatus() {
+	if(!FileUtil::IsDir(GPIO_BASE(BCMPin))) {
 		std::cout << "GetStatus. No base dir";
 		
 		return Status::Error;
 	}
 
-	if(!IsFile(GPIO_VALUE(pin))) {
+	if(!FileUtil::IsFile(GPIO_VALUE(BCMPin))) {
 		std::cout << "GetStatus. No value file";
 		
 		return Status::Error;
 	}
 		
-	FILE *fp = fopen(GPIO_VALUE(pin).c_str(), "r");
+	FILE *fp = fopen(GPIO_VALUE(BCMPin).c_str(), "r");
 	if(fp == NULL) {
 		std::cout << "GetStatus. Cannot open value file";
 		
