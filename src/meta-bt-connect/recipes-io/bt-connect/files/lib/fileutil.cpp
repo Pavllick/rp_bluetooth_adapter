@@ -9,23 +9,23 @@
 #include "fileutil.h"
 
 bool FileUtil::IsFile(std::string path) {
-	struct stat buf;
+  struct stat buf;
 
-	int err = stat(path.c_str(), &buf);
-	if(-1 == err) {
-		return false;
-	}
+  int err = stat(path.c_str(), &buf);
+  if(-1 == err) {
+    return false;
+  }
 
-	return S_ISREG(buf.st_mode) == 1;
+  return S_ISREG(buf.st_mode) == 1;
 }
 
 bool FileUtil::IsDir(std::string path) {
-	struct stat buf;
+  struct stat buf;
 
-	int err = stat(path.c_str(), &buf);
-	if(-1 == err) {
-		return false;
-	}
+  int err = stat(path.c_str(), &buf);
+  if(-1 == err) {
+    return false;
+  }
 
-	return S_ISDIR(buf.st_mode) == 1;
+  return S_ISDIR(buf.st_mode) == 1;
 }
